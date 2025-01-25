@@ -1,3 +1,33 @@
+addLayer("a", {
+    name: "成就",
+    symbol: "A",
+    position: 0,
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#FFFF00",
+    resource: "成就",
+    achievements: {
+        11:{
+            name: "设计的开始",
+            done() {return player.d.points.gte(1)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "获得一个设计者", 
+            textStyle: {'color': '#999999'},
+        },
+        12:{
+            name: "游戏设计",
+            done() {return player.g.points.gte(1)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "设计一个游戏", 
+            textStyle: {'color': '#DD4444'},
+        },
+    },
+    row: "side",
+    
+    layerShown(){return true}
+})
 addLayer("d", {
     infoboxes:{
         introBox:{
@@ -7,26 +37,26 @@ addLayer("d", {
             }
         },
     },
-    name: "designer", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "D", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    name: "designer",
+    symbol: "D",
+    position: 0,
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
         designpower: new Decimal(0),
     }},
     color: "#999999",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
-    resource: "设计者", // Name of prestige currency
-    baseResource: "设计点", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 1, // Prestige currency exponent
-    gainMult() { // Calculate the multiplier for main currency from bonuses
+    requires: new Decimal(10),
+    resource: "设计者",
+    baseResource: "设计点",
+    baseAmount() {return player.points},
+    type: "static",
+    exponent: 1,
+    gainMult() {
         mult = new Decimal(1)
         return mult
     },
-    gainExp() { // Calculate the exponent on main currency from bonuses
+    gainExp() {
         return new Decimal(0.45)
     },
     designpowergain(){
@@ -35,6 +65,7 @@ addLayer("d", {
         if(hasUpgrade("d",22)) bas = bas.add(upgradeEffect("d",22))
         let gain = bas.pow(player.d.points)
         if(hasUpgrade("d",11)) gain = gain.mul(upgradeEffect("d",11))
+        gain = gain.mul(tmp.g.gameeffect)
         if(player.d.points.gte(1)) return gain
         else return zero
     },
@@ -50,6 +81,12 @@ addLayer("d", {
         let disp = "每秒产生 <h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
         + format(tmp.d.designpowergain) + "</h3> 设计力量"
         return disp
+    },
+    autoPrestige(){
+        return hasMilestone("g",2)
+    },
+    resetsNothing(){
+        return hasMilestone("g",3)
     },
     tabFormat: {
         "main": {
@@ -68,9 +105,6 @@ addLayer("d", {
     },
     update(diff){
         player.d.designpower = player.d.designpower.add(tmp.d.designpowergain.mul(diff))
-    },
-    doReset(){
-        player.d.designpower = zero
     },
     upgrades: {
         11: {
@@ -162,9 +196,113 @@ addLayer("d", {
             style: {'height':'200px','width':'200px'},
         },
     },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
+    doReset(resettingLayer){
+        player.d.designpower = zero
+
+        if(layers[resettingLayer].row > layers[this.layer].row){
+            let kept = ["unlocked","auto"]
+            if(resettingLayer == "g" && hasMilestone("g",0)){
+                kept.push("upgrades")
+            }
+            layerDataReset(this.layer,kept)
+        }
+    },
+    row: 0,
     hotkeys: [
         {key: "d", description: "D: 获得一个设计者", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true}
+})
+addLayer("g", {
+    infoboxes:{
+        introBox:{
+            title:"游戏设计",
+            body(){
+                return "你需要设计一些游戏，来更好的接近蚂蚁"
+            }
+        },
+    },
+    name: "game",
+    symbol: "G",
+    position: 0,
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+        //designpower: new Decimal(0),
+    }},
+    color: "#DD6666",
+    branches(){return ["d"]},
+    requires: new Decimal(1e7),
+    resource: "游戏",
+    baseResource: "设计点",
+    baseAmount() {return player.points},
+    type: "static",
+    exponent: 1,
+    gainMult() {
+        mult = new Decimal(1)
+        return mult
+    },
+    gainExp() {
+        return new Decimal(0.29)
+    },
+    gameeffect(){
+        let exp = n(3)
+        return player.g.points.add(1).pow(exp)
+    },
+    effectDescription(){
+        let disp = "增益设计点和设计力量获取 <h3 style='color:#DD6666;text-shadow:0px 0px 5px;'>x" + format(tmp.g.gameeffect) + "</h3>"
+        return disp
+    },
+    tabFormat: {
+        "main": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","blank","milestones","buyables","upgrades"],
+        },
+    },
+    update(diff){
+        //player.d.designpower = player.d.designpower.add(tmp.d.designpowergain.mul(diff))
+    },
+    /*upgrades: {
+        11: {
+            title:"加强设计",
+            description(){return "基于设计点倍增设计力量<br>当前：x"},
+            cost: new Decimal(1),
+        },
+    },*/
+    milestones: {
+        0: {
+            requirementDescription: "2游戏",
+            effectDescription: "保留设计者层的升级",
+            done() { return player.g.points.gte(2) }
+        },
+        1: {
+            requirementDescription: "3游戏",
+            effectDescription(){
+                return "再次基于设计力量倍增设计点<br>当前：x" + format(this.effect())
+            },
+            effect(){
+                let effe = player.d.designpower.add(1).root(10)
+                if(hasMilestone("g",2)) effe = effe.pow(1.5)
+                if(hasMilestone("g",3)) effe = effe.pow(1.2)
+                return effe
+            },
+            done() { return player.g.points.gte(3) }
+        },
+        2: {
+            requirementDescription: "5游戏",
+            effectDescription: "自动重置获得设计者,且3游戏里程碑的效果变为原来的1.5次方",
+            done() { return player.g.points.gte(5) }
+        },
+        3: {
+            requirementDescription: "6游戏",
+            effectDescription: "设计者不重置任何东西,且3游戏里程碑的效果变为原来的1.2次方",
+            done() { return player.g.points.gte(5) }
+        },
+    },
+    
+    row: 1,
+    hotkeys: [
+        {key: "g", description: "G: 设计一个游戏", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return hasUpgrade("d",31) || hasAchievement("a",12)}
 })
