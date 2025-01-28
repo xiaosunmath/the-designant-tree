@@ -36,6 +36,12 @@ addLayer("d", {
                 return "你开始了设计蚂蚁，现在你需要雇佣更多的设计者来接近蚂蚁"
             }
         },
+        companyBox:{
+            title:"公司",
+            body(){
+                return "你开始成立公司，公司会帮助你更好的开发游戏"
+            }
+        },
     },
     name: "designer",
     symbol: "D",
@@ -44,6 +50,7 @@ addLayer("d", {
         unlocked: true,
 		points: new Decimal(0),
         designpower: new Decimal(0),
+        companypower: new Decimal(0),
     }},
     color: "#999999",
     requires: new Decimal(10),
@@ -53,11 +60,13 @@ addLayer("d", {
     type: "static",
     exponent: 1,
     gainMult() {
-        mult = new Decimal(1)
+        let mult = new Decimal(1)
         return mult
     },
     gainExp() {
-        return new Decimal(0.45)
+        let exp = new Decimal(0.45)
+        if(hasUpgrade("g",12)) exp = exp.mul(2)
+        return exp
     },
     designpowergain(){
         let bas = n(1.45)
@@ -66,6 +75,8 @@ addLayer("d", {
         let gain = bas.pow(player.d.points)
         if(hasUpgrade("d",11)) gain = gain.mul(upgradeEffect("d",11))
         gain = gain.mul(tmp.g.gameeffect)
+
+        if(gain.gte(1e60)) gain = gain.div(1e60).root(3).mul(1e60)
         if(player.d.points.gte(1)) return gain
         else return zero
     },
@@ -77,13 +88,27 @@ addLayer("d", {
         return player.d.designpower.add(1).log(effe).add(1)
         
     },
+    companypowergain(){
+        let gain = player.d.points.mul(player.points.add(1).log(10).add(1).pow(3))
+        if(hasUpgrade("g",14)) gain = gain.mul(upgradeEffect("g",14))
+        gain = gain.mul(buyableEffect("d",11))
+        return gain
+    },
+    companypowereffect(){
+        let effe = player.d.companypower.add(1).root(3)
+        return effe
+    },
     effectDescription(){
         let disp = "每秒产生 <h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
         + format(tmp.d.designpowergain) + "</h3> 设计力量"
+        if(tmp.d.designpowergain.gte(1e60)) disp = disp + "(软上限)"
         return disp
     },
     autoPrestige(){
         return hasMilestone("g",2)
+    },
+    canBuyMax(){
+        return hasUpgrade("g",13)
     },
     resetsNothing(){
         return hasMilestone("g",3)
@@ -100,11 +125,37 @@ addLayer("d", {
                      + format(tmp.d.designpowereffect) + "</h3>"
                 },
                {"color": "#FFFFFF", "font-size": "20px" }],"blank",
-               "milestones","buyables","upgrades"],
+               "upgrades"],
+        },
+        "company": {
+            content: [ ["infobox","companyBox"],
+            "main-display","prestige-button","blank",
+            ["display-text",
+                function() {
+                    return '你的公司强度为' + "<h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
+                    + format(player.d.companypower) + 
+                    "</h3>,每秒增加<h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
+                    + format(tmp.d.companypowergain) + "<h3>"
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            ["display-text",
+                function() {
+                    return '你的公司强度使你的设计点获取x' + "<h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
+                    + format(tmp.d.companypowereffect) + 
+                    "</h3>" 
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            "buyables"
+            ],
+            unlocked(){
+                return hasUpgrade("g",13)
+            }
         },
     },
     update(diff){
         player.d.designpower = player.d.designpower.add(tmp.d.designpowergain.mul(diff))
+        if(hasUpgrade("g",13))
+            player.d.companypower = player.d.companypower.add(tmp.d.companypowergain.mul(diff))
     },
     upgrades: {
         11: {
@@ -196,6 +247,30 @@ addLayer("d", {
             style: {'height':'200px','width':'200px'},
         },
     },
+    buyables: {
+        11: {
+            title: "公司扩建",
+            cost(x) {
+                let bas = ten
+                return new Decimal(1e17).mul(bas.pow(x.pow(1.1)))
+            },
+            display() { 
+                let disp = "增加公司力量获得<br>当前：x" + format(this.effect())
+                disp = disp + "<br>价格：" + format(this.cost()) + "<br>数量：" + format(getBuyableAmount("d",11))
+                return disp
+            },
+            canAfford() { return player.d.companypower.gte(this.cost()) },
+            buy() {
+                player.d.companypower = player.d.companypower.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect(){
+                let bas = four
+                let effe = bas.pow(getBuyableAmount("d",11))
+                return effe
+            },
+        },
+    },
     doReset(resettingLayer){
         player.d.designpower = zero
 
@@ -247,28 +322,71 @@ addLayer("g", {
     },
     gameeffect(){
         let exp = n(3)
-        return player.g.points.add(1).pow(exp)
+        let effe = player.g.points.add(1).pow(exp)
+        if(hasUpgrade("g",11)) effe = exp.pow(player.g.points)
+        let softcappower = n(0.3)
+        if(hasUpgrade("g",15)) softcappower = n(0.75)
+        if(effe.gte(1e10)) effe = effe.div(1e10).pow(softcappower).mul(1e10)
+        return effe
     },
     effectDescription(){
-        let disp = "增益设计点和设计力量获取 <h3 style='color:#DD6666;text-shadow:0px 0px 5px;'>x" + format(tmp.g.gameeffect) + "</h3>"
+        let disp = "增益设计点和设计力量获取 <h3 style='color:#DD6666;text-shadow:0px 0px 5px;'>x" + 
+        format(tmp.g.gameeffect) + "</h3>"
+        if(tmp.g.gameeffect.gte(1e10)) disp = disp + "(软上限)"
         return disp
     },
     tabFormat: {
         "main": {
             content: [ ["infobox","introBox"],
-            "main-display","prestige-button","blank","milestones","buyables","upgrades"],
+            "main-display","prestige-button","blank","milestones"],
         },
+        "upgrade": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","blank","upgrades"],
+            unlocked(){
+                return hasMilestone("g",4)
+            }
+        },
+    },
+    autoPrestige(){
+        return hasMilestone("g",5)
+    },
+    resetsNothing(){
+        return hasMilestone("g",5)
     },
     update(diff){
         //player.d.designpower = player.d.designpower.add(tmp.d.designpowergain.mul(diff))
     },
-    /*upgrades: {
+    upgrades: {
         11: {
-            title:"加强设计",
-            description(){return "基于设计点倍增设计力量<br>当前：x"},
-            cost: new Decimal(1),
+            title:"更好的游戏",
+            description(){return "改善游戏效果的公式"},
+            cost: new Decimal(8),
         },
-    },*/
+        12: {
+            title:"游玩量增加",
+            description(){return "设计者获取增加"},
+            cost: new Decimal(14),
+        },
+        13: {
+            title:"建立公司",
+            description(){return "购买最大设计者，并且解锁公司界面(在设计者层级)"},
+            cost: new Decimal(27),
+        },
+        14: {
+            title:"公司增强",
+            description(){return "基于制作的游戏倍增公司力量获得<br>当前：x" + format(this.effect())},
+            cost: new Decimal(32),
+            effect(){
+                return player.g.points.add(1).pow(5)
+            }
+        },
+        15: {
+            title:"削弱软上限",
+            description(){return "将游戏效果的软上限削弱,并且解锁一个可购买"},
+            cost: new Decimal(38),
+        },
+    },
     milestones: {
         0: {
             requirementDescription: "2游戏",
@@ -296,10 +414,20 @@ addLayer("g", {
         3: {
             requirementDescription: "6游戏",
             effectDescription: "设计者不重置任何东西,且3游戏里程碑的效果变为原来的1.2次方",
-            done() { return player.g.points.gte(5) }
+            done() { return player.g.points.gte(6) }
+        },
+        4: {
+            requirementDescription: "8游戏",
+            effectDescription: "解锁游戏升级",
+            done() { return player.g.points.gte(8) }
+        },
+        5: {
+            requirementDescription: "37游戏",
+            effectDescription: "你可以自动制作游戏并且游戏不重置任何东西",
+            done() { return player.g.points.gte(37) }
         },
     },
-    
+
     row: 1,
     hotkeys: [
         {key: "g", description: "G: 设计一个游戏", onPress(){if (canReset(this.layer)) doReset(this.layer)}},

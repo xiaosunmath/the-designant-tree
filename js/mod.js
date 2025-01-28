@@ -13,11 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2",
-	name: "close to designant",
+	num: "0.2.1",
+	name: "company time",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.2.1</h3><br>
+		-添加5个升级<br>
+		-添加一个可购买
+		-添加一个里程碑
 	<h3>v0.2</h3><br>
 		-添加4个里程碑<br>
 		-添加一个层级<br>
@@ -51,6 +55,7 @@ function getPointGen() {
 	if(hasUpgrade("d",14)) gain = gain.mul(upgradeEffect("d",14))
 	gain = gain.mul(tmp.g.gameeffect)
 	if(hasMilestone("g",1)) gain = gain.mul(tmp["g"].milestones[1].effect)
+	gain = gain.mul(tmp.d.companypowereffect)
 	return gain
 }
 
@@ -59,14 +64,14 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ["endgame:设计蚂蚁（划掉）<br>获得8个游戏"
+var displayThings = ["endgame:设计蚂蚁（划掉）<br>5e19公司力量"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
 	//return player.points.gte(new Decimal("e280000000"))
 	//return hasUpgrade("d",31)
-	return player.g.points.gte(8)
+	return player.d.companypower.gte(5e19)
 }
 
 
