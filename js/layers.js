@@ -37,6 +37,13 @@ addLayer("a", {
             tooltip: "解锁分公司", 
             textStyle: {'color': '#999999'},
         },
+        15:{
+            name: "提出诉讼",
+            done() {return getClickableState("g",33)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "解锁律师", 
+            textStyle: {'color': '#9999FF'},
+        },
     },
     row: "side",
     
@@ -336,6 +343,10 @@ addLayer("d", {
             if(resettingLayer == "g" && hasMilestone("g",0)){
                 kept.push("upgrades")
             }
+            if(resettingLayer == "l"){
+                kept.push("upgrades")
+                kept.push("buyables")
+            }
             layerDataReset(this.layer,kept)
         }
     },
@@ -357,6 +368,12 @@ addLayer("g", {
             title:"公司发展",
             body(){
                 return "你可以选择一些线路发展公司"
+            }
+        },
+        challengeBox:{
+            title:"原创",
+            body(){
+                return "现在你需要把抄袭你游戏的公司/团体/个人提出诉讼<br>当你在挑战中，会在律师界面解锁庭审界面（你的血量基于公司力量，攻击基于律师力量），你需要击败对方才能通过挑战，并且在挑战中会停止律师力量的生产。"
             }
         },
     },
@@ -437,12 +454,19 @@ addLayer("g", {
                
                "buyables","blank",
                ["row",[["clickable",11]]],"blank",
-               ["row",[["clickable",21]]],"blank",
-               ["row",[["clickable",31],["clickable",32]]],"blank",
+               ["row",[["clickable",21]]],"blank","blank","blank","blank",
+               ["row",[["clickable",31],"blank",["clickable",32],"blank",["clickable",33]]],"blank","blank","blank","blank",
                ["row",[["clickable",41]]],"blank",
             ],
             unlocked(){
                 return hasUpgrade("g",23)
+            }
+        },
+        "challenge": {
+            content: [ ["infobox","challengeBox"],
+            "blank","challenges"],
+            unlocked(){
+                return getClickableState("g",33)
             }
         },
     },
@@ -583,7 +607,7 @@ addLayer("g", {
             display(){return "重置你的公司增强"},
             onClick(){
                 for (let i in layers.g.clickables)
-                    if (!["11"].includes(i))
+                    if (!["11","33"].includes(i))
                         setClickableState("g",i,0)
                 player.g.company_study_points = player.g.total_company_study_points
                 player.d.othercompanypower = n(0)
@@ -653,6 +677,24 @@ addLayer("g", {
             },
             branches(){return ["21"]},
         },
+        33: {
+            title:"诉讼抄袭",
+            display(){return "对于某些抄袭你的游戏的公司/团体/个人，你需要诉讼<br>解锁律师和挑战<br>需要：5总公司增强点数"},
+            canClick(){
+                return player.g.total_company_study_points.gte(5) && getClickableState(this.layer,this.id) != 1 && getClickableState(this.layer,32) == 1
+            },
+            onClick(){
+                setClickableState(this.layer, this.id,1)
+            },
+            style() { 
+                if(getClickableState(this.layer,this.id)==1) return {'background-color' : "#77BF5F"}
+                else{
+                    if(layers.g.clickables[this.id].canClick()) return {'background-color' : "#999999"}
+                    else return {'background-color' : "#BF8F8F"}
+                }
+            },
+            branches(){return ["32"]},
+        },
         41: {
             title:"游戏影响",
             display(){return "削弱游戏效果的软上限<br>价格：2公司增强点数"},
@@ -673,9 +715,157 @@ addLayer("g", {
             branches(){return ["31"]},
         },
     },
+    challenges: {
+        11: {
+            name: "邪恶的亲戚(还没处理)",
+            challengeDescription: "你亲戚强硬的要求你将公司股份分它50%，并且抄袭了你的游戏",
+            goalDescription: "让对方血量<0（其他挑战都默认这个了)",
+            canComplete: function() {return player.l.empty_hp.lt(0)},
+            rewardDescription: "公司力量^1.1",
+            onEnter(){
+                player.l.empty_max_hp = n("(e^1.79e308) 1")
+                player.l.empty_hp = n("(e^1.79e308) 1")
+                player.l.empty_atk = n("(e^1.79e308) 1")
+                player.l.hp = player.l.max_hp
+            },
+            onExit(){
+                player.l.empty_max_hp = n(0)
+                player.l.empty_hp = n(0)
+                player.l.empty_atk = n(0)
+                player.l.hp = player.l.max_hp
+            }
+        },
+    },
     row: 1,
     hotkeys: [
         {key: "g", description: "G: 设计一个游戏", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return hasUpgrade("d",31) || hasAchievement("a",12)}
+})
+addLayer("l", {
+    infoboxes:{
+        introBox:{
+            title:"律师",
+            body(){
+                return "律师会帮助你的公司<br>本层级保留d层升级和购买项"
+            }
+        },
+        trialBox:{
+            title:"庭审",
+            body(){
+                return "击败对方，或者被对方击败"
+            }
+        },
+    },
+    name: "lawyer",
+    symbol: "L",
+    position: 1,
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+        lawyer_power: new Decimal(0),
+        empty_hp: new Decimal(0),
+        empty_atk: new Decimal(0),
+        empty_max_hp: new Decimal(0),
+        hp: new Decimal(0),
+        atk: new Decimal(0),
+        max_hp: new Decimal(0),
+    }},
+    color: "#9999FF",
+    requires: new Decimal(1e40),
+    resource: "律师",
+    baseResource: "公司力量",
+    baseAmount() {return player.d.companypower},
+    type: "static",
+    branches(){return ["d"]},
+    exponent: 1,
+    gainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    gainExp() {
+        let exp = new Decimal(0.13)
+        return exp
+    },
+    effectDescription(){
+        let disp = "每秒产生 <h3 style='color:#9999FF;text-shadow:0px 0px 5px;'>" 
+        + format(tmp.l.lawyer_power_gain) + "</h3> 律师力量"
+        return disp
+    },
+    lawyer_power_gain(){
+        let bas = n(2)
+        let gain = n(bas.pow(player.l.points).sub(1))
+        return gain
+    },
+    update(diff){
+        if(!inChallenge("g",11))
+            player.l.lawyer_power = player.l.lawyer_power.add(tmp.l.lawyer_power_gain.mul(diff))
+        if(inChallenge("g",11)){
+            player.l.hp = player.l.hp.sub(player.empty_atk.mul(diff))
+        }
+        player.l.max_hp = player.d.companypower.add(1).root(15)
+        player.l.atk = player.l.lawyer_power.root(3)
+    },
+    tabFormat: {
+        "main": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","blank",
+            ["display-text",
+                function() {
+                    return '你有 ' + "<h3 style='color:#9999FF;text-shadow:0px 0px 5px;'>" 
+                    + format(player.l.lawyer_power) + "</h3> 律师力量"
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            ]
+        },
+        "trial": {
+            content: [ ["infobox","trialBox"],"blank","blank","blank",
+            ["display-text",
+                function() {
+                    return "你的血量为" + format(player.l.hp) + "/" + format(player.l.max_hp)
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],
+            ["display-text",
+                function() {
+                    return "你的攻击力为" + format(player.l.atk)
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            ["display-text",
+                function() {
+                    return "敌人的血量为" + format(player.l.empty_hp) + "/" + format(player.l.empty_max_hp)
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],
+            ["display-text",
+                function() {
+                    return "敌人的攻击力为" + format(player.l.empty_atk)
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            "clickables",
+            ["display-text",
+                function() {
+                    if(player.l.hp.lt(1)) return "你死了"
+                },
+               {"color": "#FF0000", "font-size": "120px" }],
+            ],
+        },
+    },
+    upgrades: {
+         
+    },
+    clickables: {
+        11: {
+            title: "攻击",
+            onClick(){
+                player.l.empty_hp = player.l.empty_hp.sub(player.l.atk)
+            },
+            canClick(){
+                return inChallenge("g",11) && player.l.hp.gte(0)
+            },
+        },
+    },
+    row: 1,
+    hotkeys: [
+        {key: "l", description: "L: 获得一个律师", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return true}
 })

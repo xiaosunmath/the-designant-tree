@@ -13,11 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.2",
-	name: "company boost",
+	num: "0.3unfinished",
+	name: "trial",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.3unfinished</h3><br>
+		-添加一个新层级<br>
+		-添加一个升级<br>
+		-添加一个挑战（未完成）<br>
 	<h3>v0.2.2</h3><br>
 		-添加4个升级<br>
 		-添加一个可购买<br>
@@ -69,14 +73,14 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ["endgame:设计蚂蚁（划掉）<br>5公司增强点数"
+var displayThings = ["endgame:设计蚂蚁（划掉）<br>1律师"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
 	//return player.points.gte(new Decimal("e280000000"))
 	//return hasUpgrade("d",31)
-	return player.g.total_company_study_points.gte(5)
+	return player.l.points.gte(1)
 }
 
 
