@@ -44,6 +44,20 @@ addLayer("a", {
             tooltip: "解锁律师", 
             textStyle: {'color': '#9999FF'},
         },
+        21:{
+            name: "可恶的",
+            done() {return hasChallenge("g",11)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "第一次向他人提出诉讼并胜利", 
+            textStyle: {'color': '#FF0000'},
+        },
+        22:{
+            name: "扩张员工",
+            done() {return getClickableState("g",42)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "解锁员工", 
+            textStyle: {'color': '#FFFFFF'},
+        },
     },
     row: "side",
     
@@ -89,7 +103,7 @@ addLayer("d", {
         let exp = new Decimal(0.45)
         if(hasUpgrade("g",12)) exp = exp.mul(2)
         if(hasUpgrade("g",22)) exp = exp.mul(1.5)
-        if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(3))
+        if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(10))
         return exp
     },
     designpowergain(){
@@ -118,6 +132,7 @@ addLayer("d", {
         gain = gain.mul(buyableEffect("d",11))
         if(hasUpgrade("g",21)) gain = gain.mul(upgradeEffect("g",21))
         if(getClickableState("g",21)) gain = gain.mul(tmp.d.othercompanypowereffect)
+        if(hasChallenge("g",11)) gain = gain.pow(1.1)
         return gain
     },
     companypowereffect(){
@@ -356,6 +371,104 @@ addLayer("d", {
     ],
     layerShown(){return true}
 })
+addLayer("e", {
+    infoboxes:{
+        introBox:{
+            title:"员工",
+            body(){
+                return "公司需要更多的员工才能稳定<br>本层级的升级不会被重置<br>什么？你说什么时候才能设计蚂蚁，还远着呢"
+            }
+        },
+    },
+    name: "employee",
+    symbol: "E",
+    position: 1,
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+    }},
+    color: "#FFFFFF",
+    requires: new Decimal(10),
+    resource: "员工",
+    baseResource: "设计点",
+    baseAmount() {return player.points},
+    type: "normal",
+    exponent: 0.02,
+    branches: ["d","l"],
+    gainMult() {
+        let mult = new Decimal(1)
+        if(hasUpgrade("e",11)) mult = mult.mul(upgradeEffect("e",11))
+        if(hasUpgrade("e",12)) mult = mult.mul(upgradeEffect("e",12))
+        if(hasUpgrade("e",13)) mult = mult.mul(upgradeEffect("e",13))
+        if(hasUpgrade("e",14)) mult = mult.mul(100)
+        return mult
+    },
+    gainExp() {
+        let exp = new Decimal(1)
+        return exp
+    },
+    effectDescription(){
+        let disp = "增益设计点获取x <h3 style='color:white;text-shadow:0px 0px 5px;'>" 
+        + format(tmp.e.employee_effect) + "</h3>"
+        return disp
+    },
+    employee_effect(){
+        let power = n(0.7)
+        let effe = player.e.points.pow(power).add(1)
+        return effe
+    },
+    tabFormat: {
+        "main": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","blank","blank","upgrades"],
+        },
+    },
+    upgrades: {
+        11: {
+            title:"百万规模",
+            description(){return "基于员工倍增员工获取<br>当前：x" + format(upgradeEffect("e",11))},
+            cost: new Decimal(1e6),
+            effect(){
+                return player.e.points.add(1).log(5).add(1)
+            },
+        },
+        12: {
+            title:"一千万个",
+            description(){return "基于公司力量倍增员工获取<br>当前：x" + format(upgradeEffect("e",12))},
+            cost: new Decimal(1e7),
+            effect(){
+                return player.d.companypower.add(1).log(7).add(1)
+            },
+        },
+        13: {
+            title:"设计人类",
+            description(){return "基于设计点倍增员工<br>当前：x" + format(upgradeEffect("e",13))},
+            cost: new Decimal(1e9),
+            effect(){
+                return player.points.add(1).log(10).div(10).add(1)
+            },
+        },
+        14: {
+            title:"出发，星系！",
+            description(){return "需要将公司扩张到其他星系<br>员工获取x100"},
+            cost: new Decimal(8e9),
+        },
+    },
+    doReset(resettingLayer){
+        if(layers[resettingLayer].row > layers[this.layer].row){
+            let kept = ["unlocked","auto"]
+            if(resettingLayer == "g" || resettingLayer == "l"){
+                kept.push("upgrades")
+            }
+            layerDataReset(this.layer,kept)
+        }
+    },
+    row: 0,
+    hotkeys: [
+        {key: "e", description: "E: 重置获得员工", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return getClickableState("g",42)}
+})
 addLayer("g", {
     infoboxes:{
         introBox:{
@@ -456,7 +569,7 @@ addLayer("g", {
                ["row",[["clickable",11]]],"blank",
                ["row",[["clickable",21]]],"blank","blank","blank","blank",
                ["row",[["clickable",31],"blank",["clickable",32],"blank",["clickable",33]]],"blank","blank","blank","blank",
-               ["row",[["clickable",41]]],"blank",
+               ["row",[["clickable",41],"blank",["clickable",42]]],"blank",
             ],
             unlocked(){
                 return hasUpgrade("g",23)
@@ -607,7 +720,7 @@ addLayer("g", {
             display(){return "重置你的公司增强"},
             onClick(){
                 for (let i in layers.g.clickables)
-                    if (!["11","33"].includes(i))
+                    if (!["11","33","42"].includes(i))
                         setClickableState("g",i,0)
                 player.g.company_study_points = player.g.total_company_study_points
                 player.d.othercompanypower = n(0)
@@ -714,17 +827,57 @@ addLayer("g", {
             },
             branches(){return ["31"]},
         },
+        42: {
+            title:"荣誉",
+            display(){return "你击败了第一个对手，公司内的人感到自豪。你或许需要一些普通员工<br>价格：2公司增强点数"},
+            canClick(){
+                return player.g.company_study_points.gte(2) && getClickableState(this.layer,this.id) != 1 && getClickableState(this.layer,33) == 1
+            },
+            onClick(){
+                setClickableState(this.layer, this.id,1)
+                player.g.company_study_points = player.g.company_study_points.sub(2)
+            },
+            style() { 
+                if(getClickableState(this.layer,this.id)==1) return {'background-color' : "#77BF5F"}
+                else{
+                    if(layers.g.clickables[this.id].canClick()) return {'background-color' : "#999999"}
+                    else return {'background-color' : "#BF8F8F"}
+                }
+            },
+            branches(){return ["33"]},
+            unlocked(){
+                return hasChallenge("g",11)
+            }
+        },
     },
     challenges: {
         11: {
-            name: "邪恶的亲戚(还没处理)",
+            name: "邪恶的亲戚",
             challengeDescription: "你亲戚强硬的要求你将公司股份分它50%，并且抄袭了你的游戏",
             goalDescription: "让对方血量<0（其他挑战都默认这个了)",
             canComplete: function() {return player.l.empty_hp.lt(0)},
             rewardDescription: "公司力量^1.1",
             onEnter(){
+                player.l.empty_max_hp = n(1000)
+                player.l.empty_hp = player.l.empty_max_hp
+                player.l.empty_atk = n(30)
+                player.l.hp = player.l.max_hp
+            },
+            onExit(){
+                player.l.empty_max_hp = n(0)
+                player.l.empty_hp = n(0)
+                player.l.empty_atk = n(0)
+                player.l.hp = player.l.max_hp
+            }
+        },
+        12: {//如果你看到了这个，说明你是肮脏的黑客。你闲的没事看这里干什么
+            name: "外星组织",
+            challengeDescription: "你太强了，外星人也来抄袭你的游戏并初步取得了成就",
+            canComplete: function() {return player.l.empty_hp.lt(0)},
+            rewardDescription: "idk",
+            onEnter(){
                 player.l.empty_max_hp = n("(e^1.79e308) 1")
-                player.l.empty_hp = n("(e^1.79e308) 1")
+                player.l.empty_hp = player.l.empty_max_hp
                 player.l.empty_atk = n("(e^1.79e308) 1")
                 player.l.hp = player.l.max_hp
             },
@@ -733,6 +886,9 @@ addLayer("g", {
                 player.l.empty_hp = n(0)
                 player.l.empty_atk = n(0)
                 player.l.hp = player.l.max_hp
+            },
+            unlocked(){
+                return false
             }
         },
     },
@@ -761,7 +917,7 @@ addLayer("l", {
     symbol: "L",
     position: 1,
     startData() { return {
-        unlocked: true,
+        unlocked: false,
 		points: new Decimal(0),
         lawyer_power: new Decimal(0),
         empty_hp: new Decimal(0),
@@ -798,10 +954,14 @@ addLayer("l", {
         return gain
     },
     update(diff){
-        if(!inChallenge("g",11))
+        if(!inChallenge("g",11)){
             player.l.lawyer_power = player.l.lawyer_power.add(tmp.l.lawyer_power_gain.mul(diff))
+
+            player.l.hp = player.l.hp.max(player.l.max_hp)
+        }
         if(inChallenge("g",11)){
-            player.l.hp = player.l.hp.sub(player.empty_atk.mul(diff))
+            if(player.l.empty_hp.gte(0))
+                player.l.hp = player.l.hp.sub(player.l.empty_atk.mul(diff))
         }
         player.l.max_hp = player.d.companypower.add(1).root(15)
         player.l.atk = player.l.lawyer_power.root(3)
@@ -843,7 +1003,7 @@ addLayer("l", {
             "clickables",
             ["display-text",
                 function() {
-                    if(player.l.hp.lt(1)) return "你死了"
+                    if(player.l.hp.lt(0)) return "你死了,菜的不能再菜了"
                 },
                {"color": "#FF0000", "font-size": "120px" }],
             ],
@@ -867,5 +1027,5 @@ addLayer("l", {
     hotkeys: [
         {key: "l", description: "L: 获得一个律师", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return getClickableState("g",33)}
 })

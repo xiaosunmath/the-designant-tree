@@ -13,11 +13,15 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3unfinished",
-	name: "trial",
+	num: "0.3",
+	name: "employee grow",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.3</h3><br>
+		-完善了诉讼机制<br>
+		-添加一个新层<br>
+		-添加1+4个升级<br>
 	<h3>v0.3unfinished</h3><br>
 		-添加一个新层级<br>
 		-添加一个升级<br>
@@ -63,6 +67,7 @@ function getPointGen() {
 	gain = gain.mul(tmp.g.gameeffect)
 	if(hasMilestone("g",1)) gain = gain.mul(tmp["g"].milestones[1].effect)
 	gain = gain.mul(tmp.d.companypowereffect)
+	gain = gain.mul(tmp.e.employee_effect)
 
 	if(getClickableState('g',31)) gain = gain.pow(1.05)
 	return gain
@@ -73,14 +78,14 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ["endgame:设计蚂蚁（划掉）<br>1律师"
+var displayThings = ["endgame:设计蚂蚁（划掉）<br>E层升级14"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
 	//return player.points.gte(new Decimal("e280000000"))
-	//return hasUpgrade("d",31)
-	return player.l.points.gte(1)
+	return hasUpgrade("e",14)
+	//return player.l.points.gte(1)
 }
 
 
