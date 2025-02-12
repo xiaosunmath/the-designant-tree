@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
-	name: "employee grow",
+	num: "0.3.1",
+	name: "collapse is nign",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.3.1</h3><br>
+		-添加了16+3个升级
+		-添加了1个挑战
 	<h3>v0.3</h3><br>
 		-完善了诉讼机制<br>
 		-添加一个新层<br>
@@ -40,7 +43,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		- 添加9个升级.<br>
 		- 添加一个层级.<br>`
 
-let winText = `恭喜！你 >暂时< 通关了！`
+let winText = `你通关了，但这绝非终点<br>坍缩前的最后准备`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -68,8 +71,10 @@ function getPointGen() {
 	if(hasMilestone("g",1)) gain = gain.mul(tmp["g"].milestones[1].effect)
 	gain = gain.mul(tmp.d.companypowereffect)
 	gain = gain.mul(tmp.e.employee_effect)
+	if(getGridData("e",104)) gain = gain.mul(10000)
 
 	if(getClickableState('g',31)) gain = gain.pow(1.05)
+	if(getGridData("e",403)) gain = gain.pow(1.04)
 	return gain
 }
 
@@ -78,14 +83,15 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ["endgame:设计蚂蚁（划掉）<br>E层升级14"
+var displayThings = ["endgame:设计蚂蚁（划掉）<br>解锁坍缩"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
 	//return player.points.gte(new Decimal("e280000000"))
-	return hasUpgrade("e",14)
+	//return hasUpgrade("e",14)
 	//return player.l.points.gte(1)
+	return getGridData("e",44)
 }
 
 
