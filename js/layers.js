@@ -447,7 +447,7 @@ addLayer("e", {
         if(hasChallenge("g",12)) mult = mult.mul(challengeEffect("g",12))
         if(getGridData("e",102)) mult = mult.mul(10)
         if(getGridData("e",202)) mult = mult.mul(gridEffect("e",202))
-        if(getGridData("e",202)) mult = mult.mul(gridEffect("e",304))
+        if(getGridData("e",304)) mult = mult.mul(gridEffect("e",304))
         if(hasUpgrade("e",24)) mult = mult.mul(10)
         return mult
     },
