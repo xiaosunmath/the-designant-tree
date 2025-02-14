@@ -79,6 +79,20 @@ addLayer("a", {
             tooltip: "获得员工层的最后一个升级", 
             textStyle: {'color': '#55CC55'},
         },
+        31:{
+            name: "坍缩!",
+            done() {return player.c.points.gte(1)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "坍缩一次", 
+            textStyle: {'color': '#55CC55'},
+        },
+        32:{
+            name: "完全自动化",
+            done() {return hasMilestone("c",4)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "获得第五个坍缩里程碑", 
+            textStyle: {'color': '#55CC55'},
+        },
     },
     row: "side",
     
@@ -129,6 +143,18 @@ addLayer("d", {
         if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(roo))
         return exp
     },
+    /*getResetGain(layer,type){
+        let exp = new Decimal(0.45)
+        if(hasUpgrade("g",12)) exp = exp.mul(2)
+        if(hasUpgrade("g",22)) exp = exp.mul(1.5)
+        let roo = n(10)
+        if(getGridData("e",203)) roo = n(15)
+        if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(roo))
+        
+        let gain = player.points.div(10).pow(exp).floor()
+
+        return gain
+    },*/ //只为证明我曾为此奋斗过 这是我不得不做出的妥协
     designpowergain(){
         let bas = n(1.45)
         if(hasUpgrade("d",21)) bas = bas.add(upgradeEffect("d",21))
@@ -139,6 +165,8 @@ addLayer("d", {
         if(getGridData("e",401)) gain = gain.pow(1.02)
         
         if(gain.gte(1e60)) gain = gain.div(1e60).root(3).mul(1e60)
+        
+        if(hasUpgrade("c",11)) gain = gain.mul(100)
         if(player.d.points.gte(1)) return gain
         else return zero
     },
@@ -160,6 +188,8 @@ addLayer("d", {
         if(getGridData("e",101)) gain = gain.mul(gridEffect("e",101))
         if(getGridData("e",204)) gain = gain.mul(gridEffect("e",204))
         if(hasChallenge("g",11)) gain = gain.pow(1.1)
+        
+        if(hasUpgrade("c",11)) gain = gain.mul(100)
         return gain
     },
     companypowereffect(){
@@ -179,7 +209,7 @@ addLayer("d", {
     },
     effectDescription(){
         let disp = "每秒产生 <h3 style='color:gray;text-shadow:0px 0px 5px;'>" 
-        + format(tmp.d.designpowergain) + "</h3> 设计力量"
+        + format(tmp.d.designpowergain) + "</h3> 设计力量（最多计入1000个设计者）"
         if(tmp.d.designpowergain.gte(1e60)) disp = disp + "(软上限)"
         return disp
     },
@@ -187,7 +217,7 @@ addLayer("d", {
         return hasMilestone("g",2)
     },
     canBuyMax(){
-        return hasUpgrade("g",13) && player.d.points.lt(999)
+        return hasUpgrade("g",13)
     },
     resetsNothing(){
         return hasMilestone("g",3)
@@ -263,6 +293,8 @@ addLayer("d", {
             player.d.companypower = player.d.companypower.add(tmp.d.companypowergain.mul(diff))
         if(getClickableState("g",21))
             player.d.othercompanypower = player.d.othercompanypower.add(tmp.d.othercompanypowergain.mul(diff))
+
+        if(hasMilestone("c",4) && layers.d.buyables[11].canAfford()) layers.d.buyables[11].buy()
     },
     upgrades: {
         11: {
@@ -383,15 +415,15 @@ addLayer("d", {
 
         if(layers[resettingLayer].row > layers[this.layer].row){
             let kept = ["unlocked","auto"]
-            if(resettingLayer == "g" && hasMilestone("g",0)){
+            if(resettingLayer == "g" && (hasMilestone("g",0) || hasMilestone("c",1))){
                 kept.push("upgrades")
             }
             if(resettingLayer == "l"){
                 kept.push("upgrades")
                 kept.push("buyables")
             }
-            if(player.d.points.gte(1000)){
-                kept.push("points")
+            if(resettingLayer == "c"){
+                kept.push("upgrades")
             }
             layerDataReset(this.layer,kept)
         }
@@ -432,12 +464,12 @@ addLayer("e", {
     baseResource: "设计点",
     baseAmount() {return player.points},
     type: "normal",
+    branches: ["d","l"],
     exponent(){
         let exp = 0.02
         if(getGridData("e",302)) exp = 0.023
         return exp
     },
-    branches: ["d","l"],
     gainMult() {
         let mult = new Decimal(1)
         if(hasUpgrade("e",11)) mult = mult.mul(upgradeEffect("e",11))
@@ -449,12 +481,35 @@ addLayer("e", {
         if(getGridData("e",202)) mult = mult.mul(gridEffect("e",202))
         if(getGridData("e",304)) mult = mult.mul(gridEffect("e",304))
         if(hasUpgrade("e",24)) mult = mult.mul(10)
+
+        if(hasUpgrade("c",11)) mult = mult.mul(100)
         return mult
     },
     gainExp() {
         let exp = new Decimal(1)
         return exp
     },
+    canReset(){
+        return getClickableState("g",42)
+    },
+    /*getResetGain(){
+        let exp = n(0.02)
+        if(getGridData("e",302)) exp = 0.023
+        let gain = n(player.points.div(10).pow(exp))
+
+        let mult = n(1)
+        if(hasUpgrade("e",11)) mult = mult.mul(upgradeEffect("e",11))
+        if(hasUpgrade("e",12)) mult = mult.mul(upgradeEffect("e",12))
+        if(hasUpgrade("e",13)) mult = mult.mul(upgradeEffect("e",13))
+        if(hasUpgrade("e",14)) mult = mult.mul(100)
+        if(hasChallenge("g",12)) mult = mult.mul(challengeEffect("g",12))
+        if(getGridData("e",102)) mult = mult.mul(10)
+        if(getGridData("e",202)) mult = mult.mul(gridEffect("e",202))
+        if(getGridData("e",304)) mult = mult.mul(gridEffect("e",304))
+        if(hasUpgrade("e",24)) mult = mult.mul(10)
+        
+        return gain.mul(mult)
+    },*/ //这是一个测试，我也不知道为什么要写。实际上这个完全能取代上面的三个函数
     effectDescription(){
         let disp = "增益设计点获取x <h3 style='color:white;text-shadow:0px 0px 5px;'>" 
         + format(tmp.e.employee_effect) + "</h3>"
@@ -470,6 +525,8 @@ addLayer("e", {
         player.e.tup = buyableEffect('e',11)
         if(hasChallenge("g",21)) player.e.tup = player.e.tup.add(5)
         if(hasUpgrade("e",25)) player.e.tup = player.e.tup.add(5)
+        
+        if(hasMilestone("c",4) && layers.e.buyables[11].canAfford()) layers.e.buyables[11].buy()
     },
     tabFormat: {
         "main": {
@@ -490,6 +547,9 @@ addLayer("e", {
                 },
                {"color": "#FFFFFF", "font-size": "15px" }],"blank",
                "clickables","blank","grid"],
+            unlocked(){
+                return hasUpgrade("e",23)
+            }
         },
     },
     upgrades: {
@@ -576,6 +636,10 @@ addLayer("e", {
                 kept.push("grid")
                 kept.push("buyables")
             }
+            if(resettingLayer == "c" && hasMilestone("c",3)){
+                kept.push("upgrades")
+                kept.push("grid")
+            }
             layerDataReset(this.layer,kept)
         }
     },
@@ -635,7 +699,7 @@ addLayer("e", {
             else return false
         },
         onClick(data,id){
-            player.e.up = player.e.up.sub(this.cost[(Math.floor(id / 100) - 1)*4 + id % 100])
+            if(!hasUpgrade("c",12)) player.e.up = player.e.up.sub(this.cost[(Math.floor(id / 100) - 1)*4 + id % 100])
             player[this.layer].grid[id] = true
             if(id == 402) player.e.up = player.e.up.add(3)
         },
@@ -719,11 +783,15 @@ addLayer("e", {
             return {"background-color":color,"height":'120px',"width":'120px'}
         },
     },
+    passiveGeneration(){
+        if(hasMilestone("c",3)) return 1
+        else return 0
+    },
     row: 0,
     hotkeys: [
         {key: "e", description: "E: 重置获得员工", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return getClickableState("g",42)}
+    layerShown(){return getClickableState("g",42) || hasAchievement("a",31)}
 })
 addLayer("g", {
     infoboxes:{
@@ -847,7 +915,7 @@ addLayer("g", {
         return hasMilestone("g",5)
     },
     update(diff){
-        //player.d.designpower = player.d.designpower.add(tmp.d.designpowergain.mul(diff))
+        if(hasMilestone("c",3) && layers.g.buyables[11].canAfford()) layers.g.buyables[11].buy()
     },
     upgrades: {
         11: {
@@ -1087,35 +1155,13 @@ addLayer("g", {
         },
         42: {
             title:"荣誉",
-            display(){return "你击败了第一个对手，公司内的人感到自豪。你或许需要一些普通员工<br>需要：2公司增强点数"},
+            display(){return "你击败了第一个对手，公司内的人感到自豪。你或许需要一些普通员工<br>需要：2公司增强点数和第一游戏挑战完成"},
             canClick(){
-                return player.g.company_study_points.gte(2) && getClickableState(this.layer,this.id) != 1 && getClickableState(this.layer,33) == 1
+                return player.g.company_study_points.gte(2) && getClickableState(this.layer,this.id) != 1 && getClickableState(this.layer,33) == 1 && hasChallenge("g",11)
             },
             onClick(){
                 setClickableState(this.layer, this.id,1)
                 player.g.company_study_points = player.g.company_study_points.sub(2)
-            },
-            style() { 
-                if(getClickableState(this.layer,this.id)==1) return {'background-color' : "#77BF5F"}
-                else{
-                    if(layers.g.clickables[this.id].canClick()) return {'background-color' : "#999999"}
-                    else return {'background-color' : "#BF8F8F"}
-                }
-            },
-            branches(){return ["33"]},
-            unlocked(){
-                return hasChallenge("g",11)
-            }
-        },
-        51: {
-            title:"",
-            display(){return "<br>价格：10公司增强点数"},
-            canClick(){
-                return player.g.company_study_points.gte(10) && getClickableState(this.layer,this.id) != 1 && getClickableState(this.layer,33) == 1
-            },
-            onClick(){
-                setClickableState(this.layer, this.id,1)
-                player.g.company_study_points = player.g.company_study_points.sub(10)
             },
             style() { 
                 if(getClickableState(this.layer,this.id)==1) return {'background-color' : "#77BF5F"}
@@ -1196,6 +1242,20 @@ addLayer("g", {
                 return getGridData("e",303) || hasChallenge("g",21)
             }
         },
+    },
+    doReset(resettingLayer){
+        if(layers[resettingLayer].row > layers[this.layer].row){
+            let kept = ["unlocked","auto"]
+            if(resettingLayer == "c" || hasMilestone("c",0)){
+                kept.push("challenges")
+            }
+            if(resettingLayer == "c" || hasMilestone("c",2)){
+                kept.push("upgrades")
+                kept.push("clickables")
+                kept.push("milestones")
+            }
+            layerDataReset(this.layer,kept)
+        }
     },
     row: 1,
     hotkeys: [
@@ -1348,5 +1408,103 @@ addLayer("l", {
     hotkeys: [
         {key: "l", description: "L: 获得一个律师", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return getClickableState("g",33)}
+    layerShown(){return getClickableState("g",33) || hasAchievement("a",31)}
+})
+addLayer("c", {
+    infoboxes:{
+        introBox:{
+            title:"坍缩",
+            body(){
+                return "你之前的一切都被坍缩了！别担心，会有强大的加成帮你更快的度过前面的流程"
+            }
+        },
+    },
+    name: "collapse points",
+    symbol: "C",
+    position: 0,
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+        total: new Decimal(0),
+        best: new Decimal(0),
+    }},
+    color: "#55CC55",
+    requires: new Decimal("1e500"),
+    resource: "坍缩点",
+    baseResource: "设计点",
+    baseAmount() {return player.points},
+    type: "normal",
+    exponent: 0.004,
+    gainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    gainExp() {
+        let exp = new Decimal(1)
+        return exp
+    },
+    canReset(){
+        return getGridData("e",404)
+    },
+    tabFormat: {
+        "main": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","resource-display",
+            "blank","blank","milestones"],
+        },
+        "upgrades": {
+            content: [ ["infobox","introBox"],
+            "main-display","prestige-button","resource-display",
+            "blank","blank","upgrades"],
+        },
+    },
+    upgrades: {
+        11: {
+            title:"一个小小的加速",
+            description(){return "设计点，设计力量，公司力量，分公司力量，员工获得x100(软上限后,指数后)"},
+            cost: new Decimal(1),
+        },
+        12: {
+            title:"跳跃",
+            description(){return "购买员工增强不再消耗员工升级点"},
+            cost: new Decimal(1),
+        },
+        /*13: {
+            title:"增强",
+            description(){return "移除设计力量的效果，但是游戏里程碑2的效果变为原来的1.1次方"},
+            cost: new Decimal(100),
+        },*/
+    },
+    milestones: {
+        0: {
+            requirementDescription: "总共1坍缩点",
+            effectDescription: "保留游戏层挑战(真废物)",
+            done() { return player.c.total.gte(1) }
+        },
+        1: {
+            requirementDescription: "总共2坍缩点",
+            effectDescription: "保留设计者层的升级",
+            done() { return player.c.total.gte(2) }
+        },
+        2: {
+            requirementDescription: "总共3坍缩点",
+            effectDescription: "虽然这时你能一次获得10个坍缩点了，但是里程碑还是要这样写<br>保留游戏层升级和里程碑",
+            done() { return player.c.total.gte(3) }
+        },
+        3: {
+            requirementDescription: "总共20坍缩点",
+            effectDescription: "每秒获得100%的员工，自动购买员工购买项，保留员工层的所有升级",
+            done() { return player.c.total.gte(20) }
+        },
+        4: {
+            requirementDescription: "总共30坍缩点",
+            effectDescription: "自动购买购买项“公司扩建”，“公司增强点数”",
+            done() { return player.c.total.gte(30) }
+        },
+    },
+    row: 2,
+    hotkeys: [
+        {key: "c", description: "C: 进行一次坍缩", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return true}
 })

@@ -13,35 +13,35 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.1",
-	name: "collapse is nign",
+	num: "0.4",
+	name: "collapsed!",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.4</h3><br>
+		-添加一个新层级<br>
+		-添加5个里程碑<br>
+		-添加2个升级<br>
 	<h3>v0.3.1</h3><br>
-		-添加了16+3个升级
-		-添加了1个挑战
+		-添加了16+3个升级<br>
+		-添加了1个挑战<br>
 	<h3>v0.3</h3><br>
-		-完善了诉讼机制<br>
 		-添加一个新层<br>
 		-添加1+4个升级<br>
-	<h3>v0.3unfinished</h3><br>
-		-添加一个新层级<br>
-		-添加一个升级<br>
-		-添加一个挑战（未完成）<br>
+		-添加一个挑战<br>
 	<h3>v0.2.2</h3><br>
 		-添加4个升级<br>
 		-添加一个可购买<br>
 	<h3>v0.2.1</h3><br>
 		-添加5个升级<br>
-		-添加一个可购买
-		-添加一个里程碑
+		-添加一个可购买<br>
+		-添加一个里程碑<br>
 	<h3>v0.2</h3><br>
 		-添加4个里程碑<br>
 		-添加一个层级<br>
 	<h3>v0.1</h3><br>
-		- 添加9个升级.<br>
-		- 添加一个层级.<br>`
+		-添加一个层级.<br>
+		-添加9个升级.<br>`
 
 let winText = `你通关了，但这绝非终点<br>坍缩前的最后准备`
 
@@ -75,6 +75,8 @@ function getPointGen() {
 
 	if(getClickableState('g',31)) gain = gain.pow(1.05)
 	if(getGridData("e",403)) gain = gain.pow(1.04)
+	
+	if(hasUpgrade("c",11)) gain = gain.mul(100)
 	return gain
 }
 
@@ -83,7 +85,7 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ["endgame:设计蚂蚁（划掉）<br>解锁坍缩"
+var displayThings = ["endgame:设计蚂蚁（划掉）<br>获得最后一个成就"
 ]
 
 // Determines when the game "ends"
@@ -91,7 +93,8 @@ function isEndgame() {
 	//return player.points.gte(new Decimal("e280000000"))
 	//return hasUpgrade("e",14)
 	//return player.l.points.gte(1)
-	return getGridData("e",44)
+	//return getGridData("e",44)
+	return hasAchievement("a",32)
 }
 
 
