@@ -93,6 +93,20 @@ addLayer("a", {
             tooltip: "获得第五个坍缩里程碑", 
             textStyle: {'color': '#55CC55'},
         },
+        33:{
+            name: "这是什么",
+            done() {return hasUpgrade("c",15)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "获得夸克", 
+            textStyle: {'color': '#CC00CC'},
+        },
+        34:{
+            name: "下一个资源",
+            done() {return hasUpgrade("c",25)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "获得原子", 
+            textStyle: {'color': '#2277FF'},
+        },
     },
     row: "side",
     
@@ -143,18 +157,6 @@ addLayer("d", {
         if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(roo))
         return exp
     },
-    /*getResetGain(layer,type){
-        let exp = new Decimal(0.45)
-        if(hasUpgrade("g",12)) exp = exp.mul(2)
-        if(hasUpgrade("g",22)) exp = exp.mul(1.5)
-        let roo = n(10)
-        if(getGridData("e",203)) roo = n(15)
-        if(player.d.points.gte(1000)) exp = exp.div(player.d.points.sub(998).root(roo))
-        
-        let gain = player.points.div(10).pow(exp).floor()
-
-        return gain
-    },*/ //只为证明我曾为此奋斗过 这是我不得不做出的妥协
     designpowergain(){
         let bas = n(1.45)
         if(hasUpgrade("d",21)) bas = bas.add(upgradeEffect("d",21))
@@ -171,11 +173,14 @@ addLayer("d", {
         else return zero
     },
     designpowereffect(){
-        let effe = n(1.7)
-        if(hasUpgrade("d",23)) effe = n(1.08)
-        if(hasUpgrade("d",24)) effe = effe.sub(1).div(player.d.designpower.add(1).log(10).pow(1.75).add(1)).add(1)
-        effe = effe.max(1.00000001)
-        return player.d.designpower.add(1).log(effe).add(1)
+        if(!hasUpgrade("c",13)){
+            let effe = n(1.7)
+            if(hasUpgrade("d",23)) effe = n(1.08)
+            if(hasUpgrade("d",24)) effe = effe.sub(1).div(player.d.designpower.add(1).log(10).pow(1.75).add(1)).add(1)
+            effe = effe.max(1.00000001)
+            return player.d.designpower.add(1).log(effe).add(1)
+        }
+        else return one
         
     },
     companypowergain(){
@@ -492,24 +497,6 @@ addLayer("e", {
     canReset(){
         return getClickableState("g",42)
     },
-    /*getResetGain(){
-        let exp = n(0.02)
-        if(getGridData("e",302)) exp = 0.023
-        let gain = n(player.points.div(10).pow(exp))
-
-        let mult = n(1)
-        if(hasUpgrade("e",11)) mult = mult.mul(upgradeEffect("e",11))
-        if(hasUpgrade("e",12)) mult = mult.mul(upgradeEffect("e",12))
-        if(hasUpgrade("e",13)) mult = mult.mul(upgradeEffect("e",13))
-        if(hasUpgrade("e",14)) mult = mult.mul(100)
-        if(hasChallenge("g",12)) mult = mult.mul(challengeEffect("g",12))
-        if(getGridData("e",102)) mult = mult.mul(10)
-        if(getGridData("e",202)) mult = mult.mul(gridEffect("e",202))
-        if(getGridData("e",304)) mult = mult.mul(gridEffect("e",304))
-        if(hasUpgrade("e",24)) mult = mult.mul(10)
-        
-        return gain.mul(mult)
-    },*/ //这是一个测试，我也不知道为什么要写。实际上这个完全能取代上面的三个函数
     effectDescription(){
         let disp = "增益设计点获取x <h3 style='color:white;text-shadow:0px 0px 5px;'>" 
         + format(tmp.e.employee_effect) + "</h3>"
@@ -525,6 +512,7 @@ addLayer("e", {
         player.e.tup = buyableEffect('e',11)
         if(hasChallenge("g",21)) player.e.tup = player.e.tup.add(5)
         if(hasUpgrade("e",25)) player.e.tup = player.e.tup.add(5)
+        if(hasUpgrade("c",24)) player.e.tup = player.e.tup.mul(upgradeEffect("c",24))
         
         if(hasMilestone("c",4) && layers.e.buyables[11].canAfford()) layers.e.buyables[11].buy()
     },
@@ -664,11 +652,14 @@ addLayer("e", {
             title: "员工增强",
             cost(x) {
                 let bas = n(10)
+                if(getBuyableAmount("e",11).gte(308)) x = x.sub(306).pow(2).add(306)
                 return new Decimal(1e16).mul(bas.pow(x))
             },
             display() { 
                 let disp = "员工增强点数+1<br>当前：+" + format(this.effect())
-                disp = disp + "<br>价格：" + format(this.cost()) + "<br>数量：" + format(getBuyableAmount("e",11))
+                disp = disp + "<br>价格：" + format(this.cost())
+                if(getBuyableAmount("e",11).gte(308)) disp = disp + "(折算)"
+                disp = disp + "<br>数量：" + format(getBuyableAmount("e",11))
                 return disp
             },
             canAfford() { return player.e.points.gte(this.cost()) },
@@ -838,6 +829,9 @@ addLayer("g", {
     gainExp() {
         return new Decimal(0.29)
     },
+    canBuyMax(){
+        return hasMilestone("c",5)
+    },
     gameeffect(){
         let exp = n(3)
         let effe = player.g.points.add(1).pow(exp)
@@ -989,6 +983,7 @@ addLayer("g", {
                 let effe = player.d.designpower.add(1).root(10)
                 if(hasMilestone("g",2)) effe = effe.pow(1.5)
                 if(hasMilestone("g",3)) effe = effe.pow(1.2)
+                if(hasUpgrade("c",13)) effe = effe.pow(1.1)
                 return effe
             },
             done() { return player.g.points.gte(3) }
@@ -1309,6 +1304,12 @@ addLayer("l", {
         let exp = new Decimal(0.13)
         return exp
     },
+    autoPrestige(){
+        return hasUpgrade("c",14)
+    },
+    resetsNothing(){
+        return hasUpgrade("c",14)
+    },
     effectDescription(){
         let disp = "每秒产生 <h3 style='color:#9999FF;text-shadow:0px 0px 5px;'>" 
         + format(tmp.l.lawyer_power_gain) + "</h3> 律师力量"
@@ -1418,6 +1419,24 @@ addLayer("c", {
                 return "你之前的一切都被坍缩了！别担心，会有强大的加成帮你更快的度过前面的流程"
             }
         },
+        createBox:{
+            title:"创造",
+            body(){
+                return "现在，你需要通过创造最基本的粒子，一步步构造出蚂蚁"
+            }
+        },
+        quarkBox:{
+            title:"夸克",
+            body(){
+                return "构造更多的夸克，合成原子（电子不做了）"
+            }
+        },
+        atomBox:{
+            title:"原子",
+            body(){
+                return "idkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidk"
+            }
+        },
     },
     name: "collapse points",
     symbol: "C",
@@ -1427,6 +1446,9 @@ addLayer("c", {
 		points: new Decimal(0),
         total: new Decimal(0),
         best: new Decimal(0),
+
+        quark: n(0),
+        atom: n(0),
     }},
     color: "#55CC55",
     requires: new Decimal("1e500"),
@@ -1437,6 +1459,7 @@ addLayer("c", {
     exponent: 0.004,
     gainMult() {
         let mult = new Decimal(1)
+        if(hasUpgrade("c",14)) mult = mult.mul(upgradeEffect("c",14))
         return mult
     },
     gainExp() {
@@ -1444,7 +1467,19 @@ addLayer("c", {
         return exp
     },
     canReset(){
-        return getGridData("e",404)
+        return getGridData("e",404) && player.points.gte("1e500")
+    },
+    quarkGain(){
+        let gain = one
+        if(hasUpgrade("c",21)) gain = gain.mul(upgradeEffect("c",21))
+        if(hasUpgrade("c",22)) gain = gain.mul(upgradeEffect("c",22))
+        return gain
+    },
+    atomGain(){
+        return "undefined"
+    },
+    update(diff){
+        if(hasUpgrade("c",15)) player.c.quark = player.c.quark.add(tmp.c.quarkGain.mul(diff))
     },
     tabFormat: {
         "main": {
@@ -1455,8 +1490,49 @@ addLayer("c", {
         "upgrades": {
             content: [ ["infobox","introBox"],
             "main-display","prestige-button","resource-display",
-            "blank","blank","upgrades"],
+            "blank","blank",
+            ["row",[["upgrade",11],["upgrade",12],["upgrade",13],["upgrade",14],["upgrade",15]]]
+            ],
         },
+        "create": {
+            content: [ ["infobox","createBox"],
+            "main-display","prestige-button",
+            "blank","blank",["microtabs","main"]],
+        },
+    },
+    microtabs:{
+        main:{
+            "quark":{
+                content:[ ["infobox","quarkBox"],"blank",
+                ["display-text",
+                    function() {
+                        return "你有" + quickColor(format(player.c.quark),"#CC00CC") + "夸克，每秒增加" + quickColor(format(tmp.c.quarkGain),"#CC00CC")
+                    },
+                   {"color": "#FFFFFF", "font-size": "20px" }],"blank","blank",
+                ["row",[["upgrade",21],["upgrade",22],["upgrade",23],["upgrade",24],["upgrade",25]]]
+                ]
+            },
+            "atom":{
+                content:[ ["infobox","atomBox"],"blank",
+                ["display-text",
+                    function() {
+                        return "你有" + quickColor(format(player.c.atom),"#2277FF") + "原子，每秒增加" + quickColor("undefined","#2277FF")
+                    },
+                   {"color": "#FFFFFF", "font-size": "20px" }],"blank","blank",
+                ["display-text",
+                    function() {
+                        return "idkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidk"
+                    },
+                   {"color": "#FFFFFF", "font-size": "10px" }],
+                ["display-text",
+                    function() {
+                        return "还没做/拜谢 /拜谢 "
+                    },
+                   {"color": "#FFFFFF", "font-size": "30px" }]
+                ]
+            },
+        },
+        
     },
     upgrades: {
         11: {
@@ -1468,12 +1544,74 @@ addLayer("c", {
             title:"跳跃",
             description(){return "购买员工增强不再消耗员工升级点"},
             cost: new Decimal(1),
+            unlocked(){
+                return hasUpgrade("c",11)
+            },
         },
-        /*13: {
+        13: {
             title:"增强",
             description(){return "移除设计力量的效果，但是游戏里程碑2的效果变为原来的1.1次方"},
-            cost: new Decimal(100),
-        },*/
+            cost: new Decimal(50),
+            unlocked(){
+                return hasUpgrade("c",12)
+            },
+        },
+        14: {
+            title:"有用的律师",
+            description(){return "基于律师力量倍增坍缩点获得,并且自动重置律师，律师不重置任何东西<br>当前：x" + format(this.effect())},
+            effect(){
+                return player.l.lawyer_power.add(1).log(10).add(1)
+            },
+            cost: new Decimal(150),
+            unlocked(){
+                return hasUpgrade("c",13)
+            },
+        },
+        15: {
+            title:"创造",
+            description(){return "解锁创造界面"},
+            cost: new Decimal(1000),
+            unlocked(){
+                return hasUpgrade("c",14)
+            },
+        },
+        21: {
+            title:"夸克自增",
+            description(){return "基于夸克倍增夸克获得<br>当前：x" + format(this.effect())},
+            cost: new Decimal(10),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+            effect(){
+                return player.c.quark.add(1).log(2).add(1)
+            },
+        },
+        22: {
+            title:"坍缩夸克",
+            description(){return "基于坍缩点倍增夸克<br>当前：x" + format(this.effect())},
+            cost: new Decimal(50),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+            effect(){
+                return player.c.points.add(1).root(3)
+            },
+        },
+        23: {
+            title:"设计提升",
+            description(){return "基于夸克倍增设计点<br>当前：x" + format(this.effect())},
+            cost: new Decimal(200),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+            effect(){
+                return player.c.quark.add(1).pow(30)
+            },
+        },
+        24: {
+            title:"员工指数提升",
+            description(){return "基于夸克倍增员工增强点的数量<br>当前：x" + format(this.effect())},
+            cost: new Decimal(20000),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+            effect(){
+                return player.c.quark.add(1).log(10).root(6)
+            },
+        },
+        25: {
+            title:"合成",
+            description(){return "解锁下一个子资源"},
+            cost: new Decimal(500000),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+        },
     },
     milestones: {
         0: {
@@ -1500,6 +1638,11 @@ addLayer("c", {
             requirementDescription: "总共30坍缩点",
             effectDescription: "自动购买购买项“公司扩建”，“公司增强点数”",
             done() { return player.c.total.gte(30) }
+        },
+        5: {
+            requirementDescription: "总共100坍缩点",
+            effectDescription: "重置获得最大游戏",
+            done() { return player.c.total.gte(100) }
         },
     },
     row: 2,

@@ -13,11 +13,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.4",
-	name: "collapsed!",
+	num: "0.4.0.1",
+	name: "quark-to-atom",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.4.0.1</h3><br>
+		-添加5个升级<br>
 	<h3>v0.4</h3><br>
 		-添加一个新层级<br>
 		-添加5个里程碑<br>
@@ -43,7 +45,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		-添加一个层级.<br>
 		-添加9个升级.<br>`
 
-let winText = `你通关了，但这绝非终点<br>坍缩前的最后准备`
+let winText = `我不知道，但是微分版本号`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -77,6 +79,8 @@ function getPointGen() {
 	if(getGridData("e",403)) gain = gain.pow(1.04)
 	
 	if(hasUpgrade("c",11)) gain = gain.mul(100)
+	
+	if(hasUpgrade("c",23)) gain = gain.mul(upgradeEffect("c",23))
 	return gain
 }
 
@@ -86,7 +90,7 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = ["endgame:设计蚂蚁（划掉）<br>获得最后一个成就"
-]
+]//还是懒得改
 
 // Determines when the game "ends"
 function isEndgame() {
@@ -94,7 +98,7 @@ function isEndgame() {
 	//return hasUpgrade("e",14)
 	//return player.l.points.gte(1)
 	//return getGridData("e",44)
-	return hasAchievement("a",32)
+	return hasAchievement("a",34) //八个牙路，懒得改了
 }
 
 
