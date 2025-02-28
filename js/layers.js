@@ -107,6 +107,13 @@ addLayer("a", {
             tooltip: "获得原子", 
             textStyle: {'color': '#2277FF'},
         },
+        35:{
+            name: "这铸币作者太铸币了",
+            done() {return hasUpgrade("c",35)}, 
+            onComplete(){player.a.points=player.a.points.add(1)},
+            tooltip: "解锁元素周期表", 
+            textStyle: {'color': '#2277FF'},
+        },
     },
     row: "side",
     
@@ -1431,10 +1438,10 @@ addLayer("c", {
                 return "构造更多的夸克，合成原子（电子不做了）"
             }
         },
-        atomBox:{
-            title:"原子",
+        periodicBox:{
+            title:"元素周期表",
             body(){
-                return "idkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidk"
+                return "作者要闭关研究做一个新组件（自定义升级位置）<br>所以说先断更114514天不介意吧"
             }
         },
     },
@@ -1460,6 +1467,7 @@ addLayer("c", {
     gainMult() {
         let mult = new Decimal(1)
         if(hasUpgrade("c",14)) mult = mult.mul(upgradeEffect("c",14))
+        if(hasUpgrade("c",33)) mult = mult.mul(upgradeEffect("c",33))
         return mult
     },
     gainExp() {
@@ -1473,13 +1481,17 @@ addLayer("c", {
         let gain = one
         if(hasUpgrade("c",21)) gain = gain.mul(upgradeEffect("c",21))
         if(hasUpgrade("c",22)) gain = gain.mul(upgradeEffect("c",22))
+        if(hasUpgrade("c",32)) gain = gain.mul(upgradeEffect("c",32))
         return gain
     },
     atomGain(){
-        return "undefined"
+        let gain = player.c.quark.max(500000).div(500000).log(10).pow(2)
+        if(hasUpgrade("c",31)) gain = gain.mul(upgradeEffect("c",31))
+        return gain
     },
     update(diff){
         if(hasUpgrade("c",15)) player.c.quark = player.c.quark.add(tmp.c.quarkGain.mul(diff))
+        if(hasUpgrade("c",25)) player.c.atom = player.c.atom.add(tmp.c.atomGain.mul(diff))
     },
     tabFormat: {
         "main": {
@@ -1498,6 +1510,15 @@ addLayer("c", {
             content: [ ["infobox","createBox"],
             "main-display","prestige-button",
             "blank","blank",["microtabs","main"]],
+            unlocked(){
+                return hasUpgrade("c",15)
+            },
+        },
+        "the periodic table": {
+            content: [ ["infobox","periodicBox"]],
+            unlocked(){
+                return hasUpgrade("c",35)
+            },
         },
     },
     microtabs:{
@@ -1513,23 +1534,17 @@ addLayer("c", {
                 ]
             },
             "atom":{
-                content:[ ["infobox","atomBox"],"blank",
+                content:["blank",
                 ["display-text",
                     function() {
-                        return "你有" + quickColor(format(player.c.atom),"#2277FF") + "原子，每秒增加" + quickColor("undefined","#2277FF")
+                        return "你有" + quickColor(format(player.c.atom),"#2277FF") + "原子，每秒增加" + quickColor(format(tmp.c.atomGain),"#2277FF")
                     },
                    {"color": "#FFFFFF", "font-size": "20px" }],"blank","blank",
-                ["display-text",
-                    function() {
-                        return "idkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidkidk"
-                    },
-                   {"color": "#FFFFFF", "font-size": "10px" }],
-                ["display-text",
-                    function() {
-                        return "还没做/拜谢 /拜谢 "
-                    },
-                   {"color": "#FFFFFF", "font-size": "30px" }]
-                ]
+                ["row",[["upgrade",31],["upgrade",32],["upgrade",33],["upgrade",34],["upgrade",35]]]
+                ],
+                unlocked(){
+                    return hasUpgrade("c",25)
+                },
             },
         },
         
@@ -1604,13 +1619,52 @@ addLayer("c", {
             description(){return "基于夸克倍增员工增强点的数量<br>当前：x" + format(this.effect())},
             cost: new Decimal(20000),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
             effect(){
-                return player.c.quark.add(1).log(10).root(6)
+                let effe = player.c.quark.add(1).log(10).root(6)
+                if(hasUpgrade("c",34)) effe = effe.mul(upgradeEffect("c",34))
+                return effe
             },
         },
         25: {
             title:"合成",
             description(){return "解锁下一个子资源"},
             cost: new Decimal(500000),currencyDisplayName:"夸克",currencyInternalName:"quark",currencyLayer:"c",
+        },
+        31: {
+            title:"第一个",
+            description(){return "基于原子倍增原子<br>当前：x" + format(this.effect())},
+            cost: new Decimal(1),currencyDisplayName:"原子",currencyInternalName:"atom",currencyLayer:"c",
+            effect(){
+                return player.c.atom.add(1).log(10).add(1)
+            }
+        },
+        32: {
+            title:"原子倍增",
+            description(){return "基于原子倍增夸克<br>当前：x" + format(this.effect())},
+            cost: new Decimal(10),currencyDisplayName:"原子",currencyInternalName:"atom",currencyLayer:"c",
+            effect(){
+                return player.c.atom.add(1).pow(2)
+            }
+        },
+        33: {
+            title:"原子强化",
+            description(){return "基于原子倍增坍缩点<br>当前：x" + format(this.effect())},
+            cost: new Decimal(10000),currencyDisplayName:"原子",currencyInternalName:"atom",currencyLayer:"c",
+            effect(){
+                return player.c.atom.add(1)
+            }
+        },
+        34: {
+            title:"原子底数",
+            description(){return "倍增“员工指数提升”的效果<br>当前：x" + format(this.effect())},
+            cost: new Decimal(50000),currencyDisplayName:"原子",currencyInternalName:"atom",currencyLayer:"c",
+            effect(){
+                return player.c.atom.add(1).log(10).root(8)
+            }
+        },
+        35: {
+            title:"元素周期表",
+            description(){return "解锁元素周期表"},
+            cost: new Decimal(100000),currencyDisplayName:"原子",currencyInternalName:"atom",currencyLayer:"c",
         },
     },
     milestones: {
@@ -1649,5 +1703,5 @@ addLayer("c", {
     hotkeys: [
         {key: "c", description: "C: 进行一次坍缩", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return getGridData("e",404) || hasAchievement("a",31)}
 })
