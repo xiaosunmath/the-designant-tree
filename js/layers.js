@@ -1438,12 +1438,6 @@ addLayer("c", {
                 return "构造更多的夸克，合成原子（电子不做了）"
             }
         },
-        periodicBox:{
-            title:"元素周期表",
-            body(){
-                return "作者要闭关研究做一个新组件（自定义升级位置）<br>所以说先断更114514天不介意吧"
-            }
-        },
     },
     name: "collapse points",
     symbol: "C",
@@ -1453,6 +1447,7 @@ addLayer("c", {
 		points: new Decimal(0),
         total: new Decimal(0),
         best: new Decimal(0),
+        eleshown: 0,
 
         quark: n(0),
         atom: n(0),
@@ -1468,6 +1463,7 @@ addLayer("c", {
         let mult = new Decimal(1)
         if(hasUpgrade("c",14)) mult = mult.mul(upgradeEffect("c",14))
         if(hasUpgrade("c",33)) mult = mult.mul(upgradeEffect("c",33))
+        if(getClickableState("c",1) == 1) mult = mult.mul(clickableEffect("c",1))
         return mult
     },
     gainExp() {
@@ -1493,6 +1489,22 @@ addLayer("c", {
         if(hasUpgrade("c",15)) player.c.quark = player.c.quark.add(tmp.c.quarkGain.mul(diff))
         if(hasUpgrade("c",25)) player.c.atom = player.c.atom.add(tmp.c.atomGain.mul(diff))
     },
+    elementinfo(){
+        let eleinfo = ["选择一个元素查看信息"]
+        let disp = ""
+
+        disp = "[H]坍缩点获得基于原子倍增"
+        if(getClickableState("c",1) == 1) disp = disp + "（已购买）"
+        disp = disp + "<br>当前：x" + format(tmp["c"].clickables[1].effect) + "<br>价格：" + format(tmp["c"].clickables[1].cost) + "原子"
+        eleinfo.push(disp)
+
+        disp = "[He]idk"
+        if(getClickableState("c",2) == 1) disp = disp + "（已购买）"
+        disp = disp + "<br>当前：x" + format(tmp["c"].clickables[2].effect) + "<br>价格：" + format(tmp["c"].clickables[2].cost) + "原子"
+        eleinfo.push(disp)
+
+        return eleinfo
+    },
     tabFormat: {
         "main": {
             content: [ ["infobox","introBox"],
@@ -1515,7 +1527,22 @@ addLayer("c", {
             },
         },
         "the periodic table": {
-            content: [ ["infobox","periodicBox"]],
+            content: [["display-text",
+                function() {
+                    return tmp.c.elementinfo[player.c.eleshown]
+                },
+               {"color": "#FFFFFF", "font-size": "20px" }],"blank",
+            ["row",[["clickable",1],["blank",["640px","40px"]],["clickable",2]]],
+            ["row",[["clickable",3],["clickable",4],["blank",["400px","40px"]],["clickable",5],["clickable",6],["clickable",7],["clickable",8],["clickable",9],["clickable",10]]],
+            ["row",[["clickable",11],["clickable",12],["blank",["400px","40px"]],["clickable",13],["clickable",14],["clickable",15],["clickable",16],["clickable",17],["clickable",18]]],
+            ["row",[["clickable",19],["clickable",20],["clickable",21],["clickable",22],["clickable",23],["clickable",24],["clickable",25],["clickable",26],["clickable",27],["clickable",28],["clickable",29],["clickable",30],["clickable",31],["clickable",32],["clickable",33],["clickable",34],["clickable",35],["clickable",36]]],
+            ["row",[["clickable",37],["clickable",38],["clickable",39],["clickable",40],["clickable",41],["clickable",42],["clickable",43],["clickable",44],["clickable",45],["clickable",46],["clickable",47],["clickable",48],["clickable",49],["clickable",50],["clickable",51],["clickable",52],["clickable",53],["clickable",54]]],
+            ["row",[["clickable",55],["clickable",56],["display-text","**",{"font-size": "40px" }],["clickable",72],["clickable",73],["clickable",74],["clickable",75],["clickable",76],["clickable",77],["clickable",78],["clickable",79],["clickable",80],["clickable",81],["clickable",82],["clickable",83],["clickable",84],["clickable",85],["clickable",86]]],
+            ["row",[["clickable",87],["clickable",88],["display-text","**",{"font-size": "40px" }],["clickable",104],["clickable",105],["clickable",106],["clickable",107],["clickable",108],["clickable",109],["clickable",110],["clickable",111],["clickable",112],["clickable",113],["clickable",114],["clickable",115],["clickable",116],["clickable",117],["clickable",118]]],
+            "blank","blank",
+            ["row",[["clickable",57],["clickable",58],["clickable",59],["clickable",60],["clickable",61],["clickable",62],["clickable",63],["clickable",64],["clickable",65],["clickable",66],["clickable",67],["clickable",68],["clickable",69],["clickable",70],["clickable",71]]],
+            ["row",[["clickable",89],["clickable",90],["clickable",91],["clickable",92],["clickable",93],["clickable",94],["clickable",95],["clickable",96],["clickable",97],["clickable",98],["clickable",99],["clickable",100],["clickable",101],["clickable",102],["clickable",103]]],
+            ],
             unlocked(){
                 return hasUpgrade("c",35)
             },
@@ -1697,6 +1724,3548 @@ addLayer("c", {
             requirementDescription: "总共100坍缩点",
             effectDescription: "重置获得最大游戏",
             done() { return player.c.total.gte(100) }
+        },
+    },
+    clickables: {
+        1: {
+            title: "H",
+            onClick(){
+                if(player.c.eleshown == 1){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 1
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n(100000)
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        2: {
+            title: "He",
+            onClick(){
+                if(player.c.eleshown == 2){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 2
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        3: {
+            title: "Li",
+            onClick(){
+                if(player.c.eleshown == 3){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 3
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        4: {
+            title: "Be",
+            onClick(){
+                if(player.c.eleshown == 4){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 4
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        5: {
+            title: "B",
+            onClick(){
+                if(player.c.eleshown == 5){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 5
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        6: {
+            title: "C",
+            onClick(){
+                if(player.c.eleshown == 6){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 6
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        7: {
+            title: "N",
+            onClick(){
+                if(player.c.eleshown == 7){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 7
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        8: {
+            title: "O",
+            onClick(){
+                if(player.c.eleshown == 8){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 8
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        9: {
+            title: "F",
+            onClick(){
+                if(player.c.eleshown == 9){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 9
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        10: {
+            title: "Ne",
+            onClick(){
+                if(player.c.eleshown == 10){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 10
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        11: {
+            title: "Na",
+            onClick(){
+                if(player.c.eleshown == 11){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 11
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        12: {
+            title: "Mg",
+            onClick(){
+                if(player.c.eleshown == 12){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 12
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        13: {
+            title: "Al",
+            onClick(){
+                if(player.c.eleshown == 13){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 13
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        14: {
+            title: "Si",
+            onClick(){
+                if(player.c.eleshown == 14){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 14
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        15: {
+            title: "P",
+            onClick(){
+                if(player.c.eleshown == 15){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 15
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        16: {
+            title: "S",
+            onClick(){
+                if(player.c.eleshown == 16){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 16
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        17: {
+            title: "Cl",
+            onClick(){
+                if(player.c.eleshown == 17){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 17
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        18: {
+            title: "Ar",
+            onClick(){
+                if(player.c.eleshown == 18){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 18
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        19: {
+            title: "K",
+            onClick(){
+                if(player.c.eleshown == 19){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 19
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        20: {
+            title: "Ca",
+            onClick(){
+                if(player.c.eleshown == 20){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 20
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        21: {
+            title: "Sc",
+            onClick(){
+                if(player.c.eleshown == 21){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 21
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        22: {
+            title: "Ti",
+            onClick(){
+                if(player.c.eleshown == 22){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 22
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        23: {
+            title: "V",
+            onClick(){
+                if(player.c.eleshown == 23){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 23
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        24: {
+            title: "Cr",
+            onClick(){
+                if(player.c.eleshown == 24){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 24
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        25: {
+            title: "Mn",
+            onClick(){
+                if(player.c.eleshown == 25){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 25
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        26: {
+            title: "Fe",
+            onClick(){
+                if(player.c.eleshown == 26){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 26
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        27: {
+            title: "Co",
+            onClick(){
+                if(player.c.eleshown == 27){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 27
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        28: {
+            title: "Ni",
+            onClick(){
+                if(player.c.eleshown == 28){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 28
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        29: {
+            title: "Cu",
+            onClick(){
+                if(player.c.eleshown == 29){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 29
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        30: {
+            title: "Zn",
+            onClick(){
+                if(player.c.eleshown == 30){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 30
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        31: {
+            title: "Ga",
+            onClick(){
+                if(player.c.eleshown == 31){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 31
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        32: {
+            title: "Ge",
+            onClick(){
+                if(player.c.eleshown == 32){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 32
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        33: {
+            title: "As",
+            onClick(){
+                if(player.c.eleshown == 33){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 33
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        34: {
+            title: "Se",
+            onClick(){
+                if(player.c.eleshown == 34){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 34
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        35: {
+            title: "Br",
+            onClick(){
+                if(player.c.eleshown == 35){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 35
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        36: {
+            title: "Kr",
+            onClick(){
+                if(player.c.eleshown == 36){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 36
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        37: {
+            title: "Rb",
+            onClick(){
+                if(player.c.eleshown == 37){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 37
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        38: {
+            title: "Sr",
+            onClick(){
+                if(player.c.eleshown == 38){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 38
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        39: {
+            title: "Y",
+            onClick(){
+                if(player.c.eleshown == 39){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 39
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        40: {
+            title: "Zr",
+            onClick(){
+                if(player.c.eleshown == 40){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 40
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        41: {
+            title: "Nb",
+            onClick(){
+                if(player.c.eleshown == 41){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 41
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        42: {
+            title: "Mo",
+            onClick(){
+                if(player.c.eleshown == 42){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 42
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        43: {
+            title: "Tc",
+            onClick(){
+                if(player.c.eleshown == 43){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 43
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        44: {
+            title: "Ru",
+            onClick(){
+                if(player.c.eleshown == 44){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 44
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        45: {
+            title: "Rh",
+            onClick(){
+                if(player.c.eleshown == 45){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 45
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        46: {
+            title: "Pd",
+            onClick(){
+                if(player.c.eleshown == 46){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 46
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        47: {
+            title: "Ag",
+            onClick(){
+                if(player.c.eleshown == 47){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 47
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        48: {
+            title: "Cd",
+            onClick(){
+                if(player.c.eleshown == 48){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 48
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        49: {
+            title: "In",
+            onClick(){
+                if(player.c.eleshown == 49){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 49
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        50: {
+            title: "Sn",
+            onClick(){
+                if(player.c.eleshown == 50){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 50
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        51: {
+            title: "Sb",
+            onClick(){
+                if(player.c.eleshown == 51){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 51
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        52: {
+            title: "Te",
+            onClick(){
+                if(player.c.eleshown == 52){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 52
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        53: {
+            title: "I",
+            onClick(){
+                if(player.c.eleshown == 53){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 53
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        54: {
+            title: "Xe",
+            onClick(){
+                if(player.c.eleshown == 54){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 54
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        55: {
+            title: "Cs",
+            onClick(){
+                if(player.c.eleshown == 55){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 55
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        56: {
+            title: "Ba",
+            onClick(){
+                if(player.c.eleshown == 56){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 56
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        57: {
+            title: "La",
+            onClick(){
+                if(player.c.eleshown == 57){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 57
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        58: {
+            title: "Ce",
+            onClick(){
+                if(player.c.eleshown == 58){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 58
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        59: {
+            title: "Pr",
+            onClick(){
+                if(player.c.eleshown == 59){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 59
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        60: {
+            title: "Nd",
+            onClick(){
+                if(player.c.eleshown == 60){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 60
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        61: {
+            title: "Pm",
+            onClick(){
+                if(player.c.eleshown == 61){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 61
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        62: {
+            title: "Sm",
+            onClick(){
+                if(player.c.eleshown == 62){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 62
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        63: {
+            title: "Eu",
+            onClick(){
+                if(player.c.eleshown == 63){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 63
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        64: {
+            title: "Gd",
+            onClick(){
+                if(player.c.eleshown == 64){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 64
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        65: {
+            title: "Tb",
+            onClick(){
+                if(player.c.eleshown == 65){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 65
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        66: {
+            title: "Dy",
+            onClick(){
+                if(player.c.eleshown == 66){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 66
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        67: {
+            title: "Ho",
+            onClick(){
+                if(player.c.eleshown == 67){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 67
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        68: {
+            title: "Er",
+            onClick(){
+                if(player.c.eleshown == 68){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 68
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        69: {
+            title: "Tm",
+            onClick(){
+                if(player.c.eleshown == 69){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 69
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        70: {
+            title: "Yb",
+            onClick(){
+                if(player.c.eleshown == 70){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 70
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        71: {
+            title: "Lu",
+            onClick(){
+                if(player.c.eleshown == 71){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 71
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        72: {
+            title: "Hf",
+            onClick(){
+                if(player.c.eleshown == 72){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 72
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        73: {
+            title: "Ta",
+            onClick(){
+                if(player.c.eleshown == 73){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 73
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        74: {
+            title: "W",
+            onClick(){
+                if(player.c.eleshown == 74){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 74
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        75: {
+            title: "Re",
+            onClick(){
+                if(player.c.eleshown == 75){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 75
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        76: {
+            title: "Os",
+            onClick(){
+                if(player.c.eleshown == 76){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 76
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        77: {
+            title: "Ir",
+            onClick(){
+                if(player.c.eleshown == 77){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 77
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        78: {
+            title: "Pt",
+            onClick(){
+                if(player.c.eleshown == 78){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 78
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        79: {
+            title: "Au",
+            onClick(){
+                if(player.c.eleshown == 79){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 79
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        80: {
+            title: "Hg",
+            onClick(){
+                if(player.c.eleshown == 80){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 80
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        81: {
+            title: "Ti",
+            onClick(){
+                if(player.c.eleshown == 81){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 81
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        82: {
+            title: "Pb",
+            onClick(){
+                if(player.c.eleshown == 82){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 82
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        83: {
+            title: "Bi",
+            onClick(){
+                if(player.c.eleshown == 83){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 83
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        84: {
+            title: "Po",
+            onClick(){
+                if(player.c.eleshown == 84){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 84
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        85: {
+            title: "At",
+            onClick(){
+                if(player.c.eleshown == 85){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 85
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        86: {
+            title: "Rn",
+            onClick(){
+                if(player.c.eleshown == 86){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 86
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        87: {
+            title: "Fr",
+            onClick(){
+                if(player.c.eleshown == 87){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 87
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        88: {
+            title: "Ra",
+            onClick(){
+                if(player.c.eleshown == 88){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 88
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        89: {
+            title: "Ac",
+            onClick(){
+                if(player.c.eleshown == 89){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 89
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        90: {
+            title: "Th",
+            onClick(){
+                if(player.c.eleshown == 90){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 90
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        91: {
+            title: "Pa",
+            onClick(){
+                if(player.c.eleshown == 91){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 91
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        92: {
+            title: "U",
+            onClick(){
+                if(player.c.eleshown == 92){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 92
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        93: {
+            title: "Np",
+            onClick(){
+                if(player.c.eleshown == 93){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 93
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        94: {
+            title: "Pu",
+            onClick(){
+                if(player.c.eleshown == 94){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 94
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        95: {
+            title: "Am",
+            onClick(){
+                if(player.c.eleshown == 95){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 95
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        96: {
+            title: "Cm",
+            onClick(){
+                if(player.c.eleshown == 96){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 96
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        97: {
+            title: "Bk",
+            onClick(){
+                if(player.c.eleshown == 97){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 97
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        98: {
+            title: "Cf",
+            onClick(){
+                if(player.c.eleshown == 98){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 98
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        99: {
+            title: "Es",
+            onClick(){
+                if(player.c.eleshown == 99){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 99
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        100: {
+            title: "Fm",
+            onClick(){
+                if(player.c.eleshown == 100){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 100
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        101: {
+            title: "Md",
+            onClick(){
+                if(player.c.eleshown == 101){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 101
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        102: {
+            title: "No",
+            onClick(){
+                if(player.c.eleshown == 102){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 102
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return player.c.atom.add(1).log(10).pow(4)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        103: {
+            title: "Lr",
+            onClick(){
+                if(player.c.eleshown == 103){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 103
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        104: {
+            title: "Rf",
+            onClick(){
+                if(player.c.eleshown == 104){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 104
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        105: {
+            title: "Db",
+            onClick(){
+                if(player.c.eleshown == 105){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 105
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        106: {
+            title: "Sg",
+            onClick(){
+                if(player.c.eleshown == 106){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 106
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        107: {
+            title: "Bh",
+            onClick(){
+                if(player.c.eleshown == 107){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 107
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        108: {
+            title: "Hs",
+            onClick(){
+                if(player.c.eleshown == 108){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 108
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        109: {
+            title: "Mt",
+            onClick(){
+                if(player.c.eleshown == 109){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 109
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        110: {
+            title: "Ds",
+            onClick(){
+                if(player.c.eleshown == 110){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 110
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        111: {
+            title: "Rg",
+            onClick(){
+                if(player.c.eleshown == 111){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 111
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        112: {
+            title: "Cn",
+            onClick(){
+                if(player.c.eleshown == 112){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 112
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        113: {
+            title: "Nh",
+            onClick(){
+                if(player.c.eleshown == 113){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 113
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        114: {
+            title: "Fl",
+            onClick(){
+                if(player.c.eleshown == 114){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 114
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        115: {
+            title: "Mc",
+            onClick(){
+                if(player.c.eleshown == 115){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 115
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        116: {
+            title: "Lv",
+            onClick(){
+                if(player.c.eleshown == 116){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 116
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        117: {
+            title: "Ts",
+            onClick(){
+                if(player.c.eleshown == 117){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 117
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
+        },
+        118: {
+            title: "Og",
+            onClick(){
+                if(player.c.eleshown == 118){
+                    if(this.canBuy() && getClickableState(this.layer,this.id) == 0) setClickableState(this.layer,this.id,1)
+                }
+                player.c.eleshown = 118
+            },
+            canBuy(){
+                return player.c.atom.gte(this.cost())
+            },
+            cost(){
+                return n("(e^1.79e308) 1")
+            },
+            effect(){
+                return n(0)
+            },
+            canClick(){
+                return true
+            },
+            style(){
+                let color = ""
+                if(getClickableState(this.layer,this.id) == 1) color = "#00BB00"
+                else{
+                    if(this.canBuy()) color = "#DDDDDD"
+                    else color = "#000000"
+                }
+                return {"color":"white","font-size":"12px","border-radius":"0px","width":"40px",'height':'40px',"min-height":"0px","background-color":color,"border":"3px solid white"}
+            },
         },
     },
     row: 2,
