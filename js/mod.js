@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.4.0.2",
-	name: "the periodic table",
+	num: "0.4.0.3",
+	name: "C-C-C-C-C-C",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.4.0.3</h3><br>
+		-添加了元素周期表<br>
+		-添加6个元素<br>
 	<h3>v0.4.0.2</h3><br>
 		-添加5个升级<br>
 	<h3>v0.4.0.1</h3><br>
@@ -100,7 +103,7 @@ function isEndgame() {
 	//return hasUpgrade("e",14)
 	//return player.l.points.gte(1)
 	//return getGridData("e",44)
-	return hasAchievement("a",35) //八个牙路，懒得改了
+	return hasAchievement("a",41) //八个牙路，懒得改了
 }
 
 
